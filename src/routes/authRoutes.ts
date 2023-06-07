@@ -1,18 +1,24 @@
 import { PrismaClient } from '@prisma/client';
-import {Router} from 'express';
+import { Router } from 'express';
+import jwt from 'jsonwebtoken'
 
 const router = Router();
 const prisma = new PrismaClient();
 
 const EMAIL_TOKEN_EXPIRATION_MINUTES = 10;
 const AUTHENTICATION_EXPIRATION_HOURS = 12;
+const JWT_SECRET = "SECRET";
 
 function generateEmailToken(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-function generateAuthenticationToken(): string {
-    return '';
+function generateAuthToken(tokenId: number): string {
+    const jwtPayload = { tokenId }
+    return jwt.sign(jwtPayload, JWT_SECRET,{
+        algorithm: "HS256",
+        noTimestamp: true,
+    });
 }
 
 router.post('/login', async (req, res) =>{
@@ -48,18 +54,7 @@ router.post('/login', async (req, res) =>{
 
 
 
-    // const apiToken = await prisma.token.create({
-    //     data: {
-    //         type: 'API',
-    //         expiration,
-    //     }
-    // })
-    // const result = await prisma.token.create({
-    //     data: {
-    //         email,
-    //         id
-    //     }
-    // })
+    
 
 });
 
@@ -89,7 +84,40 @@ router.post('/authenticate', async (req, res)=>{
         return res.sendStatus(401);
     }
 
-    res.sendStatus(200);
-})
+
+    const expiration = new Date(
+        new Date().getTime() + AUTHENTICATION_EXPIRATION_HOURS * 60
+        * 60 * 1000
+    );
+
+    const apiToken = await prisma.token.create({
+        data: {
+            type: 'API',
+            expiration,
+            user: {
+                connect: {email},
+            }
+        }
+    });
+
+    //Invalidate email token
+    await prisma.token.update({
+        where: { id: dbEmailToken.id},
+        data: { valid: false}
+    });
+    
+    const authToken = generateAuthToken(apiToken.id);
+    //generate the JWT token
+
+    // const result = await prisma.token.create({
+    //     data: {
+    //         email,
+    //         id
+    //     }
+    // })
+    
+
+    res.json({authToken});
+});
 
 export default router;
