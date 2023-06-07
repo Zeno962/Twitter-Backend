@@ -1,23 +1,32 @@
 import {Router} from 'express';
 import {PrismaClient} from '@prisma/client'
 
+import jwt from 'jsonwebtoken';
 const router = Router();
 const prisma = new PrismaClient();
 
+
+
 //Create tweet
 router.post('/', async (req, res)=>{
-    const {content, image, userId} = req.body;
+    const {content, image} = req.body;
+
+    //@ts-ignore
+    const user = req.user;
+    
     try {
         const result = await prisma.tweet.create({
             data : {
                 content,
                 image,
-                userId
+                userId: user.id
             }
         });
         res.sendStatus(200);
+        console.log(result);
     } catch (e) {
          res.status(400).json({Error:'Failed to create tweet'})
+         console.log(e);
     }
     
 });

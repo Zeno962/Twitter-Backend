@@ -60,7 +60,6 @@ router.post('/login', async (req, res) =>{
 
 router.post('/authenticate', async (req, res)=>{
     const {email, emailToken } = req.body;
-    console.log(email, emailToken);
 
     const dbEmailToken = await prisma.token.findUnique(
         { where :{
@@ -74,6 +73,7 @@ router.post('/authenticate', async (req, res)=>{
 
     if(!dbEmailToken || !dbEmailToken.valid){
         return res.sendStatus(401);
+        
     }
 
     if (dbEmailToken.expiration < new Date()){
@@ -84,7 +84,7 @@ router.post('/authenticate', async (req, res)=>{
         return res.sendStatus(401);
     }
 
-
+    
     const expiration = new Date(
         new Date().getTime() + AUTHENTICATION_EXPIRATION_HOURS * 60
         * 60 * 1000
@@ -106,17 +106,10 @@ router.post('/authenticate', async (req, res)=>{
         data: { valid: false}
     });
     
+    //generate authentication token
     const authToken = generateAuthToken(apiToken.id);
-    //generate the JWT token
 
-    // const result = await prisma.token.create({
-    //     data: {
-    //         email,
-    //         id
-    //     }
-    // })
     
-
     res.json({authToken});
 });
 
