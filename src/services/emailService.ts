@@ -2,7 +2,7 @@ import {SESClient, SendEmailCommand} from '@aws-sdk/client-ses';
 
 require('dotenv').config();
 
-//console.log(process.env.AWS_ACCESS_KEY_ID);
+console.log(process.env.AWS_ACCESS_KEY_ID);
 
 const ses = new SESClient({});
 
@@ -28,16 +28,15 @@ function createSendEmailCommand(toAddress: string, fromAddress: string, message:
 }
 
 export async function sendEmailToken(email: string, token: string){
-  //console.log('email: ', email, token);
   const message = `Your one time password is ${token}`
   console.log(email);
-  const command = createSendEmailCommand(email,'postmancoder@outlook.com',message);
+  const command = createSendEmailCommand(email,' ',message);
   try {
     //console.log(command);
     return await ses.send(command);
   }catch(e) {
-    console.log('an error occurred');
+    console.log('An error occurred');
     return e;
 }
 } 
-sendEmailToken("kennethambrose962@gmail.com","123");
+sendEmailToken(" ","");

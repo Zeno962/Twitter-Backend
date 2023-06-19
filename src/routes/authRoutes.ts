@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { Router } from 'express';
 import jwt from 'jsonwebtoken'
-import {sendEmailToken} from '../services/emailService'
+import sendEmailToken from '../services/myEmailService'
 
 const router = Router();
 const prisma = new PrismaClient();
